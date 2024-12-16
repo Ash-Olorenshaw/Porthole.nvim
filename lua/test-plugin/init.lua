@@ -3,6 +3,38 @@
 -- This file defines a simple NeoVim plugin to create a floating window.
 
 local M = {}
+local extension_names = require 'test-plugin.icon_map'
+
+function string_split(inputstr, sep)
+  if sep == nil then
+    sep = "%s"
+  end
+  local t = {}
+  for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+    table.insert(t, str)
+  end
+  return t
+end
+
+function attach_icons(items)
+	local new_items = {}
+	for i, item in ipairs(items) do
+		if (string.find(item, ".", 1, true) or (extension_names[item] ~= nil)) then
+			local sections = string_split(item, ".")
+			local ext = sections[#sections]
+			if (extension_names[ext] ~= nil) then
+				new_items[i] = extension_names[ext].."  "..item
+			elseif (extension_names[item] ~= nil) then
+				new_items[i] = extension_names[item].."  "..item
+			else
+				new_items[i] = "󰡯  "..item
+			end
+		else
+			new_items[i] = "󰡯  "..item
+		end
+	end
+	return new_items
+end
 
 function list_stuff()
 	local directory = vim.fn.getcwd()
@@ -74,7 +106,7 @@ function M.create_floating_window()
     vim.api.nvim_win_set_option(win, 'cursorcolumn', false)
     
     -- Populate the buffer with some text
-    vim.api.nvim_buf_set_lines(buf, 0, -1, false, list_stuff())
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, attach_icons(list_stuff()))
 	-- REMEMBER: close window with 'q'
     
     -- Set keymap to close the window with 'q'
