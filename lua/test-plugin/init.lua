@@ -4,6 +4,35 @@
 
 local M = {}
 
+function list_stuff()
+	local directory = vim.fn.getcwd()
+	local i, t = 0, {}
+	local childItems, popen = "", io.popen
+    local delimiter = package.config:sub(1,1)
+
+	if (vim.fn.executable('pwsh') == 1) then
+		childItems = popen('pwsh -Command Get-ChildItem -Force -Name -Path "'..directory..'"')
+
+	elseif (vim.fn.executable('powershell.exe') == 1) then
+		childItems = popen('powershell.exe -Command Get-ChildItem -Force -Name -Path "'..directory..'"')
+
+	elseif(delimiter == '\\') then
+		childItems = popen('dir "'..directory..'" /a /b')
+
+	elseif(delimiter == '/') then
+		childItems = popen('ls -a "'..directory..'"')
+	end
+
+	for filename in childItems:lines() do
+        i = i + 1
+        t[i] = filename
+    end
+    childItems:close()
+	table.insert(t, 1, tostring(directory))
+    return t
+
+end
+
 -- Function to create a floating window
 function M.create_floating_window()
     -- Get the dimensions of the current NeoVim window
@@ -45,11 +74,8 @@ function M.create_floating_window()
     vim.api.nvim_win_set_option(win, 'cursorcolumn', false)
     
     -- Populate the buffer with some text
-    vim.api.nvim_buf_set_lines(buf, 0, -1, false, {
-        'Welcome to the floating window!',
-        'This is a custom NeoVim plugin.',
-        'Close this window by pressing `q`.'
-    })
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, list_stuff())
+	-- REMEMBER: close window with 'q'
     
     -- Set keymap to close the window with 'q'
     vim.api.nvim_buf_set_keymap(buf, 'n', 'q', ':bd!<CR>', { noremap = true, silent = true })
