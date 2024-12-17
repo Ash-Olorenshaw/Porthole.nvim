@@ -1,7 +1,7 @@
-" Title:        Example Plugin
-" Description:  A plugin to provide an example for creating Neovim plugins.
-" Last Change:  8 November 2021
-" Maintainer:   Example User <https://github.com/example-user>
+" Title:        Porthole.nvim
+" Description:  Provides a little popup filetree to easily get a small but quick idea of the project overview.
+" Last Change:  17 December 2024
+" Maintainer:   Ash Olorenshaw <https://github.com/ash-olorenshaw>
 
 " Prevents the plugin from being loaded multiple times. If the loaded
 " variable exists, do nothing more. Otherwise, assign the loaded
