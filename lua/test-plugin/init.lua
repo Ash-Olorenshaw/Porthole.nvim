@@ -4,6 +4,32 @@
 local M = {}
 local extension_names = require 'test-plugin.icon_map'
 
+local current_dir = vim.fn.getcwd()
+local system_delimiter = package.config:sub(1,1)
+local window = nil
+local buffer = nil
+
+function declare_colours()
+	vim.api.nvim_set_hl(0, 'Porthole-LightPurple', { fg = '#C796E8' })
+	vim.api.nvim_set_hl(0, 'Porthole-DarkPurple', { fg = '#8755AA' })
+	vim.api.nvim_set_hl(0, 'Porthole-LightBlue', { fg = '#A1E9F4' })
+	vim.api.nvim_set_hl(0, 'Porthole-Blue', { fg = '#49C3D8' })
+	vim.api.nvim_set_hl(0, 'Porthole-LightRed', { fg = '#FF795D' })
+	vim.api.nvim_set_hl(0, 'Porthole-DarkGreen', { fg = '#549E43' })
+	vim.api.nvim_set_hl(0, 'Porthole-Orange', { fg = '#FC981E' })
+	vim.api.nvim_set_hl(0, 'Porthole-LightYellow', { fg = '#F9F484' })
+	vim.api.nvim_set_hl(0, 'Porthole-Violet', { fg = '#C28AF7' })
+	vim.api.nvim_set_hl(0, 'Porthole-Green', { fg = '#71D159' })
+	vim.api.nvim_set_hl(0, 'Porthole-DarkBlue', { fg = '#459CA8' })
+	vim.api.nvim_set_hl(0, 'Porthole-LightGrey', { fg = '#CECECE' })
+	vim.api.nvim_set_hl(0, 'Porthole-DarkGrey', { fg = '#969696' })
+	vim.api.nvim_set_hl(0, 'Porthole-Red', { fg = '#E84A2E' })
+	vim.api.nvim_set_hl(0, 'Porthole-LightGreen', { fg = '#9FE58E' })
+	vim.api.nvim_set_hl(0, 'Porthole-LightOrange', { fg = '#FFAC4F' })
+end
+
+declare_colours()
+
 function TableConcat(t1, t2)
     for i = 1,#t2 do
         t1[#t1 + 1] = t2[i]
@@ -23,23 +49,17 @@ function string_split(inputstr, sep)
 	return t
 end
 
-function declare_colours()
-	vim.api.nvim_set_hl(0, 'Porthole-LightPurple', { fg = '#C796E8' })
-	vim.api.nvim_set_hl(0, 'Porthole-DarkPurple', { fg = '#8755AA' })
-	vim.api.nvim_set_hl(0, 'Porthole-LightBlue', { fg = '#A1E9F4' })
-	vim.api.nvim_set_hl(0, 'Porthole-Blue', { fg = '#49C3D8' })
-	vim.api.nvim_set_hl(0, 'Porthole-LightRed', { fg = '#FF795D' })
-	vim.api.nvim_set_hl(0, 'Porthole-DarkGreen', { fg = '#549E43' })
-	vim.api.nvim_set_hl(0, 'Porthole-Orange', { fg = '#FC981E' })
-	vim.api.nvim_set_hl(0, 'Porthole-LightYellow', { fg = '#F9F484' })
-	vim.api.nvim_set_hl(0, 'Porthole-Violet', { fg = '#C28AF7' })
-	vim.api.nvim_set_hl(0, 'Porthole-Green', { fg = '#71D159' })
-	vim.api.nvim_set_hl(0, 'Porthole-DarkBlue', { fg = '#459CA8' })
-	vim.api.nvim_set_hl(0, 'Porthole-LightGrey', { fg = '#CECECE' })
-	vim.api.nvim_set_hl(0, 'Porthole-DarkGrey', { fg = '#969696' })
-	vim.api.nvim_set_hl(0, 'Porthole-Red', { fg = '#E84A2E' })
-	vim.api.nvim_set_hl(0, 'Porthole-LightGreen', { fg = '#9FE58E' })
-	vim.api.nvim_set_hl(0, 'Porthole-LightOrange', { fg = '#FFAC4F' })
+function cursor_interact(dirs, files)
+	y, x = unpack(vim.api.nvim_win_get_cursor(0))
+	if (y <= table.getn(dirs)) then
+		current_dir = current_dir..system_delimiter..dirs[y]
+
+		print(vim.inspect(current_dir))
+		generate_buffer()
+
+	elseif (y > table.getn(dirs)) then
+		vim.cmd("execute \"normal \\<C-w>p\" | :edit "..current_dir..system_delimiter..files[y - #dirs])
+	end
 end
 
 function attach_icons(items, directories)
@@ -77,38 +97,36 @@ function attach_icons(items, directories)
 	return new_items, new_colours
 end
 
-function list_stuff(directories)
-	local directory = vim.fn.getcwd()
+function list_stuff(directories, system_delimiter, current_dir)
 	local i, t = 0, {}
 	local childItems, popen = "", io.popen
-    local system_delimiter = package.config:sub(1,1)
 
 	if (vim.fn.executable('pwsh') == 1) then
 		if (directories) then
-			childItems = popen('pwsh -Command Get-ChildItem -Force -Name -Directory -Path "'..directory..'"')
+			childItems = popen('pwsh -Command Get-ChildItem -Force -Name -Directory -Path "'..current_dir..'"')
 		else
-			childItems = popen('pwsh -Command Get-ChildItem -Force -Name -File -Path "'..directory..'"')
+			childItems = popen('pwsh -Command Get-ChildItem -Force -Name -File -Path "'..current_dir..'"')
 		end
 
 	elseif (vim.fn.executable('powershell.exe') == 1) then
 		if (directories) then
-			childItems = popen('powershell.exe -Command Get-ChildItem -Force -Name -Directory -Path "'..directory..'"')
+			childItems = popen('powershell.exe -Command Get-ChildItem -Force -Name -Directory -Path "'..current_dir..'"')
 		else
-			childItems = popen('powershell.exe -Command Get-ChildItem -Force -Name -File -Path "'..directory..'"')
+			childItems = popen('powershell.exe -Command Get-ChildItem -Force -Name -File -Path "'..current_dir..'"')
 		end
 
 	elseif(system_delimiter == '\\') then
 		if (directories) then
-			childItems = popen('dir "'..directory..'" /ad /b')
+			childItems = popen('dir "'..current_dir..'" /ad /b')
 		else
-			childItems = popen('dir "'..directory..'" /a-d /b')
+			childItems = popen('dir "'..current_dir..'" /a-d /b')
 		end
 
 	elseif(system_delimiter == '/') then
 		if (directories) then
-			childItems = popen('find . "'..directory..'" -maxdepth 1 -type d')
+			childItems = popen('find . "'..current_dir..'" -maxdepth 1 -type d')
 		else
-			childItems = popen('find . "'..directory..'" -maxdepth 1 -not -type d')
+			childItems = popen('find . "'..current_dir..'" -maxdepth 1 -not -type d')
 		end
 	end
 
@@ -123,19 +141,53 @@ function list_stuff(directories)
 
 end
 
+function generate_buffer()
+	if not (buffer and vim.api.nvim_buf_is_valid(buffer)) then
+		print("Error - unable to generate buffer for window. Buffer does not exist.")
+		return
+	end
+
+    vim.api.nvim_buf_set_option(buffer, 'modifiable', true)
+	vim.api.nvim_buf_set_lines(buffer, 0, -1, false, {})
+	vim.api.nvim_buf_clear_namespace(buffer, -1, 0, -1)
+	local dirs, files = list_stuff(true, system_delimiter, current_dir), list_stuff(false, system_delimiter, current_dir)
+
+	local dirs_icons, dir_cols = attach_icons(dirs, true)
+	local files_icons, file_cols = attach_icons(files, false)
+	local output, output_cols = TableConcat(dirs_icons, files_icons), TableConcat(dir_cols, file_cols)
+
+    vim.api.nvim_buf_set_lines(buffer, 0, -1, false, output)
+	
+	for i, val in ipairs(output) do
+	--	print(vim.inspect(output_cols[i]))
+		if (output_cols[i] ~= "blank") then
+			vim.api.nvim_buf_add_highlight(buffer, -1, output_cols[i], i - 1, 0, -1)
+		end
+	end
+
+    vim.keymap.set('n', '<CR>', function() cursor_interact(dirs, files) end, { noremap = true, silent = true, buffer = true })
+
+    vim.api.nvim_buf_set_option(buffer, 'modifiable', false)
+end
+
 -- Function to create a floating window
 function M.create_floating_window()
+	if window and vim.api.nvim_win_is_valid(window) then
+    	vim.api.nvim_set_current_win(window)
+    	return
+	end
+
     -- Define the size of the floating window
     local win_width = math.ceil(vim.o.columns * 0.2)
     local win_height = math.ceil(vim.o.lines * 0.2)
 
     -- Create a new buffer (unlisted, scratch buffer)
-    local buf = vim.api.nvim_create_buf(false, true)
+    buffer = vim.api.nvim_create_buf(false, true)
 
     -- Set buffer options
-	-- vim.api.nvim_win_set_option(win, 'winblend', 10)
-    vim.api.nvim_buf_set_option(buf, 'buftype', 'nofile')
-    vim.api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
+	-- 
+    vim.api.nvim_buf_set_option(buffer, 'buftype', 'nofile')
+    vim.api.nvim_buf_set_option(buffer, 'bufhidden', 'wipe')
     
     -- Define window options
     local opts = {
@@ -149,33 +201,19 @@ function M.create_floating_window()
     }
     
     -- Create the floating window
-    local win = vim.api.nvim_open_win(buf, true, opts)
+
+    window = vim.api.nvim_open_win(buffer, true, opts)
     
     -- Set some window options
-    vim.api.nvim_win_set_option(win, 'wrap', false)
-    vim.api.nvim_win_set_option(win, 'cursorline', true)
-    vim.api.nvim_win_set_option(win, 'cursorcolumn', false)
+    vim.api.nvim_win_set_option(window, 'wrap', false)
+    vim.api.nvim_win_set_option(window, 'cursorline', true)
+    vim.api.nvim_win_set_option(window, 'cursorcolumn', false)
+	vim.api.nvim_win_set_option(window, 'winblend', 10)
     
-    -- Populate the buffer with some text
-	local dirs, dir_cols = attach_icons(list_stuff(true), true)
-	local files, file_cols = attach_icons(list_stuff(false), false)
-	local output, output_cols = TableConcat(dirs, files), TableConcat(dir_cols, file_cols)
-	--print(vim.inspect(output))
-	--print(vim.inspect(output_cols))
+	generate_buffer()
 
-    vim.api.nvim_buf_set_lines(buf, 0, -1, false, output)
-	
-	declare_colours()
-	for i, val in ipairs(output) do
-	--	print(vim.inspect(output_cols[i]))
-		if (output_cols[i] ~= "blank") then
-			vim.api.nvim_buf_add_highlight(buf, -1, output_cols[i], i - 1, 0, -1)
-		end
-	end
 	-- REMEMBER: close window with 'q'
-    
-    -- Set keymap to close the window with 'q'
-    vim.api.nvim_buf_set_keymap(buf, 'n', 'q', ':bd!<CR>', { noremap = true, silent = true })
+    vim.api.nvim_buf_set_keymap(buffer, 'n', 'q', ':bd!<CR>', { noremap = true, silent = true })
 end
 
 -- Function to register the command that calls the floating window
