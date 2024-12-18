@@ -51,14 +51,24 @@ end
 
 function cursor_interact(dirs, files)
 	y, x = unpack(vim.api.nvim_win_get_cursor(0))
-	if (y <= table.getn(dirs)) then
-		current_dir = current_dir..system_delimiter..dirs[y]
+	if (y == 2) then
+		local dir_parts = string_split(current_dir, system_delimiter)
+		if (#dir_parts > 1) then
+			local relevant_items = table.move(dir_parts, 1, #dir_parts - 1, 1, {})
+			print(vim.inspect(relevant_items))
+			current_dir = table.concat(relevant_items, system_delimiter)
+		elseif (system_delimiter == '/') then
+			current_dir = '/'
+		end
 
 		print(vim.inspect(current_dir))
 		generate_buffer()
+	elseif (1 < y and y <= #dirs + 2) then
+		current_dir = current_dir..system_delimiter..dirs[y - 2]
+		generate_buffer()
 
-	elseif (y > table.getn(dirs)) then
-		vim.cmd("execute \"normal \\<C-w>p\" | :edit "..current_dir..system_delimiter..files[y - #dirs])
+	elseif (y > #dirs + 2) then
+		vim.cmd("execute \"normal \\<C-w>p\" | :edit "..current_dir..system_delimiter..files[y - #dirs - 2])
 	end
 end
 
@@ -155,6 +165,12 @@ function generate_buffer()
 	local dirs_icons, dir_cols = attach_icons(dirs, true)
 	local files_icons, file_cols = attach_icons(files, false)
 	local output, output_cols = TableConcat(dirs_icons, files_icons), TableConcat(dir_cols, file_cols)
+
+	table.insert(output, 1, "..")
+	table.insert(output, 1, current_dir)
+	table.insert(output_cols, 1, "blank")
+	table.insert(output_cols, 1, "blank")
+
 
     vim.api.nvim_buf_set_lines(buffer, 0, -1, false, output)
 	
