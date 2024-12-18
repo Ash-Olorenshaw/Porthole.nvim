@@ -2,7 +2,7 @@
 -- created by Ash Olorenshaw
 
 local M = {}
-local extension_names = require 'test-plugin.icon_map'
+local extension_names = require 'porthole-nvim.icon_map'
 
 local current_dir = vim.fn.getcwd()
 local system_delimiter = package.config:sub(1,1)

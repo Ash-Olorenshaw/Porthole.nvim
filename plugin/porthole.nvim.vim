@@ -6,10 +6,10 @@
 " Prevents the plugin from being loaded multiple times. If the loaded
 " variable exists, do nothing more. Otherwise, assign the loaded
 " variable and continue running this instance of the plugin.
-if exists("g:loaded_testplugin")
+if exists("g:loaded_portholenvim")
     finish
 endif
-let g:loaded_testplugin = 1
+let g:loaded_portholenvim = 1
 
 " Exposes the plugin's functions for use as commands in Neovim.
-command! -nargs=0 WindowFloat lua require("test-plugin").create_floating_window()
+command! -nargs=0 WindowFloat lua require("porthole-nvim").create_floating_window()
