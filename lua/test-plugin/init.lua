@@ -107,36 +107,49 @@ function attach_icons(items, directories)
 	return new_items, new_colours
 end
 
-function list_stuff(directories, system_delimiter, current_dir)
+function list_stuff(directories)
 	local i, t = 0, {}
 	local childItems, popen = "", io.popen
 
-	if (vim.fn.executable('pwsh') == 1) then
-		if (directories) then
-			childItems = popen('pwsh -Command Get-ChildItem -Force -Name -Directory -Path "'..current_dir..'"')
-		else
-			childItems = popen('pwsh -Command Get-ChildItem -Force -Name -File -Path "'..current_dir..'"')
-		end
+	if (vim.fn.executable('dotnet') == 1) then
+		-- if we can, run the DotNet F# program - Lister
+		local dir_parts = string_split(debug.getinfo(1).source:sub(2), "/")
+		local relevant_items = table.move(dir_parts, 1, #dir_parts - 1, 1, {})
+		local plug_dir = table.concat(relevant_items, system_delimiter)
 
-	elseif (vim.fn.executable('powershell.exe') == 1) then
 		if (directories) then
-			childItems = popen('powershell.exe -Command Get-ChildItem -Force -Name -Directory -Path "'..current_dir..'"')
+			childItems = popen('dotnet "'..plug_dir..system_delimiter..'Lister/Lister.dll'..'" "'..current_dir..'" -d')
 		else
-			childItems = popen('powershell.exe -Command Get-ChildItem -Force -Name -File -Path "'..current_dir..'"')
+			childItems = popen('dotnet "'..plug_dir..system_delimiter..'Lister/Lister.dll'..'" "'..current_dir..'" -f')
 		end
+	else
+		if (vim.fn.executable('pwsh') == 1) then
+			if (directories) then
+				childItems = popen('pwsh -Command Get-ChildItem -Force -Name -Directory -Path "'..current_dir..'"')
+			else
+				childItems = popen('pwsh -Command Get-ChildItem -Force -Name -File -Path "'..current_dir..'"')
+			end
 
-	elseif(system_delimiter == '\\') then
-		if (directories) then
-			childItems = popen('dir "'..current_dir..'" /ad /b')
-		else
-			childItems = popen('dir "'..current_dir..'" /a-d /b')
-		end
+		elseif (vim.fn.executable('powershell.exe') == 1) then
+			if (directories) then
+				childItems = popen('powershell.exe -Command Get-ChildItem -Force -Name -Directory -Path "'..current_dir..'"')
+			else
+				childItems = popen('powershell.exe -Command Get-ChildItem -Force -Name -File -Path "'..current_dir..'"')
+			end
 
-	elseif(system_delimiter == '/') then
-		if (directories) then
-			childItems = popen('find . "'..current_dir..'" -maxdepth 1 -type d')
-		else
-			childItems = popen('find . "'..current_dir..'" -maxdepth 1 -not -type d')
+		elseif(system_delimiter == '\\') then
+			if (directories) then
+				childItems = popen('dir "'..current_dir..'" /ad /b')
+			else
+				childItems = popen('dir "'..current_dir..'" /a-d /b')
+			end
+
+		elseif(system_delimiter == '/') then
+			if (directories) then
+				childItems = popen('find . "'..current_dir..'" -maxdepth 1 -type d')
+			else
+				childItems = popen('find . "'..current_dir..'" -maxdepth 1 -not -type d')
+			end
 		end
 	end
 
