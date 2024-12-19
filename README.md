@@ -6,12 +6,13 @@ _A small, slightly rounded view into the files in your current directory._
 
 Porthole.nvim is a small plugin for NeoVim to give you a popup window to show you the current directory's files and folders.
 
-Mostly written in Lua, Porthole also uses a small compiled F# .NET program to perform directory searches called **Lister**. Don't have .NET installed? 
+Mostly written in Lua, Porthole also uses a small compiled F# .NET program to perform directory searches called [**Lister**](https://github.com/Ash-Olorenshaw/Lister). Don't have .NET installed? 
 Don't worry about it, Porthole falls back to using Bash, Pwsh or CMD depending on your system (just a slight performance decrease).
 
 ### Features 
  - Small (screenspace-wise and storage-wise) and fast!
  - [NERDFont](https://github.com/ryanoasis/nerd-fonts) icons (can be turned off)
+ - Interaction with folders, files, etc
  - Fully cross-platform
  - Customisable
  - Colourful!
@@ -33,7 +34,7 @@ then run
 ```
 to get started!
 
-If you want to have Porthole.nvim use Lister for better speeds - install .NET 8.0 with your method of choice.
+If you want to have Porthole.nvim use [**Lister**](https://github.com/Ash-Olorenshaw/Lister) for better speeds - install .NET 8.0 with your method of choice.
 
 e.g.
 ```nu-script
