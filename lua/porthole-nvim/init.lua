@@ -4,6 +4,15 @@
 local M = {}
 local extension_names = require 'porthole-nvim.icon_map'
 
+local config = {
+	width_ratio = 0.2,
+	height_ratio = 0.2,
+	quit_key = 'q',
+	reload_key = 'q',
+	action_key = '<CR>',
+	use_icons = true
+}
+
 local current_dir = vim.fn.getcwd()
 local system_delimiter = package.config:sub(1,1)
 local window = nil
@@ -86,25 +95,32 @@ function attach_icons(items, directories)
 				new_items[i] = extension_names[item][1].." "..item
 				new_colours[i] = extension_names[item][2]
 			else
-				new_colours[i] = "blank"
 
 				if (not directories) then
 					new_items[i] = "󰡯 "..item
+					new_colours[i] = "blank"
 				else
 					new_items[i] = " "..item
+					new_colours[i] = "dir"
 				end
 			end
 		else
-			new_colours[i] = "blank"
 
 			if (not directories) then
 				new_items[i] = "󰡯 "..item
+				new_colours[i] = "blank"
 			else
 				new_items[i] = " "..item
+				new_colours[i] = "dir"
 			end
 		end
 	end
-	return new_items, new_colours
+
+	if (config.use_icons) then
+		return new_items, new_colours
+	else
+		return items, new_colours
+	end
 end
 
 function list_stuff(directories)
@@ -159,7 +175,6 @@ function list_stuff(directories)
     end
 
     childItems:close()
-	--table.insert(t, 1, tostring(directory))
     return t
 
 end
@@ -170,6 +185,8 @@ function generate_buffer()
 		return
 	end
 
+	-- function to generate the output
+
     vim.api.nvim_buf_set_option(buffer, 'modifiable', true)
 	vim.api.nvim_buf_set_lines(buffer, 0, -1, false, {})
 	vim.api.nvim_buf_clear_namespace(buffer, -1, 0, -1)
@@ -179,46 +196,52 @@ function generate_buffer()
 	local files_icons, file_cols = attach_icons(files, false)
 	local output, output_cols = TableConcat(dirs_icons, files_icons), TableConcat(dir_cols, file_cols)
 
+	-- show current path and up dir button
 	table.insert(output, 1, "..")
 	table.insert(output, 1, current_dir)
 	table.insert(output_cols, 1, "blank")
-	table.insert(output_cols, 1, "blank")
+	table.insert(output_cols, 1, "Porthole-LightPurple")
 
 
     vim.api.nvim_buf_set_lines(buffer, 0, -1, false, output)
 	
 	for i, val in ipairs(output) do
-	--	print(vim.inspect(output_cols[i]))
 		if (output_cols[i] ~= "blank") then
-			vim.api.nvim_buf_add_highlight(buffer, -1, output_cols[i], i - 1, 0, -1)
+			if (i == 1) then
+				vim.api.nvim_buf_add_highlight(buffer, -1, output_cols[i], i - 1, 0, -1)
+			elseif (output_cols[i] == "dir") then
+				vim.api.nvim_buf_add_highlight(buffer, -1, "Porthole-LightYellow", i - 1, 0, -1)
+			else
+				if (config.use_icons) then
+					vim.api.nvim_buf_add_highlight(buffer, -1, output_cols[i], i - 1, 0, 3)
+				else
+					vim.api.nvim_buf_add_highlight(buffer, -1, output_cols[i], i - 1, 0, -1)
+				end
+			end
 		end
 	end
 
-    vim.keymap.set('n', '<CR>', function() cursor_interact(dirs, files) end, { noremap = true, silent = true, buffer = true })
+    vim.keymap.set('n', config.action_key, function() cursor_interact(dirs, files) end, { noremap = true, silent = true, buffer = true })
 
     vim.api.nvim_buf_set_option(buffer, 'modifiable', false)
 end
 
--- Function to create a floating window
 function M.create_floating_window()
 	if window and vim.api.nvim_win_is_valid(window) then
     	vim.api.nvim_set_current_win(window)
     	return
 	end
 
-    -- Define the size of the floating window
-    local win_width = math.ceil(vim.o.columns * 0.2)
-    local win_height = math.ceil(vim.o.lines * 0.2)
+    local win_width = math.ceil(vim.o.columns * config.width_ratio)
+    local win_height = math.ceil(vim.o.lines * config.height_ratio)
 
     -- Create a new buffer (unlisted, scratch buffer)
     buffer = vim.api.nvim_create_buf(false, true)
 
-    -- Set buffer options
-	-- 
+    -- Set options
     vim.api.nvim_buf_set_option(buffer, 'buftype', 'nofile')
     vim.api.nvim_buf_set_option(buffer, 'bufhidden', 'wipe')
     
-    -- Define window options
     local opts = {
         relative = 'editor',
         width = win_width,
@@ -229,8 +252,7 @@ function M.create_floating_window()
         border = 'single'
     }
     
-    -- Create the floating window
-
+	-- make window
     window = vim.api.nvim_open_win(buffer, true, opts)
     
     -- Set some window options
@@ -241,17 +263,13 @@ function M.create_floating_window()
     
 	generate_buffer()
 
-	-- REMEMBER: close window with 'q'
-    vim.api.nvim_buf_set_keymap(buffer, 'n', 'q', ':bd!<CR>', { noremap = true, silent = true })
+    vim.keymap.set('n', config.reload_key, function() generate_buffer() end, { noremap = true, silent = true })
+    vim.api.nvim_buf_set_keymap(buffer, 'n', config.quit_key, ':bd!<CR>', { noremap = true, silent = true })
 end
 
--- Function to register the command that calls the floating window
---function M.setup()
---    -- Create a user command to open the floating window
---    vim.api.nvim_create_user_command('FloatingWindow', function()
---        M.create_floating_window()
---    end, {})
---end
+function M.setup(user_config)
+	config = vim.tbl_deep_extend('force', config, user_config or {})
+end
 
 return M
 
