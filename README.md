@@ -18,7 +18,7 @@ Don't worry about it, Porthole falls back to using Bash, Pwsh or CMD depending o
 
 ![Porthole.nvim in action](/Screenshots/main.png?raw=true "Porthole.nvim")
 
-### Getting Started
+## Getting Started
 
 Get started by installing this plugin with your plugin manager of choice:
 
@@ -55,6 +55,6 @@ require "porthole-nvim".setup {
 	use_icons = true
 }
 ```
+Put this either in your `init.lua` or in a Lua block in your `init.vim` if you want to tweak things.
 
-When set to *true*, `use_icons` will use [NERDFont](https://github.com/ryanoasis/nerd-fonts) icons, if you don't have a NERDFont installed, 
-you will need to install one or else have weird artifact-y icons instead
+When set to *true*, `use_icons` will use [NERDFont](https://github.com/ryanoasis/nerd-fonts) icons.
