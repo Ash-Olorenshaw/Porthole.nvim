@@ -50,7 +50,7 @@ require "porthole-nvim".setup {
 	width_ratio = 0.2,
 	height_ratio = 0.2,
 	quit_key = 'q',
-	reload_key = 'q',
+	reload_key = 'r',
 	action_key = '<CR>',
 	use_icons = true
 }

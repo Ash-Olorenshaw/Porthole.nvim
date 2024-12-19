@@ -11,7 +11,7 @@ local config = {
 	width_ratio = 0.2,
 	height_ratio = 0.2,
 	quit_key = 'q',
-	reload_key = 'q',
+	reload_key = 'r',
 	action_key = '<CR>',
 	use_icons = true
 }
@@ -228,8 +228,8 @@ function M.create_floating_window()
     
 	generate_buffer()
 
-    vim.keymap.set('n', config.reload_key, function() generate_buffer() end, { noremap = true, silent = true })
     vim.api.nvim_buf_set_keymap(buffer, 'n', config.quit_key, ':bd!<CR>', { noremap = true, silent = true })
+    vim.keymap.set('n', config.reload_key, function() generate_buffer() end, { noremap = true, silent = true })
 end
 
 function M.setup(user_config)
