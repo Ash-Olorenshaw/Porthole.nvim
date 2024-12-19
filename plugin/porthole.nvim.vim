@@ -1,7 +1,6 @@
-" Title:        Porthole.nvim
-" Description:  Provides a little popup filetree to easily get a small but quick idea of the project overview.
-" Last Change:  17 December 2024
-" Maintainer:   Ash Olorenshaw <https://github.com/ash-olorenshaw>
+" Porthole.nvim
+" Provides a little popup filetree to easily get a small but quick idea of the project overview.
+" Created & maintained by Ash Olorenshaw
 
 if exists("g:loaded_portholenvim")
     finish

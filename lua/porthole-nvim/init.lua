@@ -1,8 +1,11 @@
 -- Porthole.nvim
+-- Provides a little popup filetree to easily get a small but quick idea of the project overview.
 -- created by Ash Olorenshaw
 
 local M = {}
 local extension_names = require 'porthole-nvim.icon_map'
+local utils = require 'porthole-nvim.utils'
+local declare_colours, string_split, table_concat = utils.declare_colours, utils.string_split, utils.table_concat
 
 local config = {
 	width_ratio = 0.2,
@@ -18,45 +21,8 @@ local system_delimiter = package.config:sub(1,1)
 local window = nil
 local buffer = nil
 
-function declare_colours()
-	vim.api.nvim_set_hl(0, 'Porthole-LightPurple', { fg = '#C796E8' })
-	vim.api.nvim_set_hl(0, 'Porthole-DarkPurple', { fg = '#8755AA' })
-	vim.api.nvim_set_hl(0, 'Porthole-LightBlue', { fg = '#A1E9F4' })
-	vim.api.nvim_set_hl(0, 'Porthole-Blue', { fg = '#49C3D8' })
-	vim.api.nvim_set_hl(0, 'Porthole-LightRed', { fg = '#FF795D' })
-	vim.api.nvim_set_hl(0, 'Porthole-DarkGreen', { fg = '#549E43' })
-	vim.api.nvim_set_hl(0, 'Porthole-Orange', { fg = '#FC981E' })
-	vim.api.nvim_set_hl(0, 'Porthole-LightYellow', { fg = '#F9F484' })
-	vim.api.nvim_set_hl(0, 'Porthole-Violet', { fg = '#C28AF7' })
-	vim.api.nvim_set_hl(0, 'Porthole-Green', { fg = '#71D159' })
-	vim.api.nvim_set_hl(0, 'Porthole-DarkBlue', { fg = '#459CA8' })
-	vim.api.nvim_set_hl(0, 'Porthole-LightGrey', { fg = '#CECECE' })
-	vim.api.nvim_set_hl(0, 'Porthole-DarkGrey', { fg = '#969696' })
-	vim.api.nvim_set_hl(0, 'Porthole-Red', { fg = '#E84A2E' })
-	vim.api.nvim_set_hl(0, 'Porthole-LightGreen', { fg = '#9FE58E' })
-	vim.api.nvim_set_hl(0, 'Porthole-LightOrange', { fg = '#FFAC4F' })
-end
 
 declare_colours()
-
-function TableConcat(t1, t2)
-    for i = 1,#t2 do
-        t1[#t1 + 1] = t2[i]
-    end
-
-    return t1
-end
-
-function string_split(inputstr, sep)
-	if sep == nil then
-		sep = "%s"
-	end
-	local t = {}
-	for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
-	  table.insert(t, str)
-	end
-	return t
-end
 
 function cursor_interact(dirs, files)
 	y, x = unpack(vim.api.nvim_win_get_cursor(0))
@@ -186,7 +152,6 @@ function generate_buffer()
 	end
 
 	-- function to generate the output
-
     vim.api.nvim_buf_set_option(buffer, 'modifiable', true)
 	vim.api.nvim_buf_set_lines(buffer, 0, -1, false, {})
 	vim.api.nvim_buf_clear_namespace(buffer, -1, 0, -1)
@@ -194,7 +159,7 @@ function generate_buffer()
 
 	local dirs_icons, dir_cols = attach_icons(dirs, true)
 	local files_icons, file_cols = attach_icons(files, false)
-	local output, output_cols = TableConcat(dirs_icons, files_icons), TableConcat(dir_cols, file_cols)
+	local output, output_cols = table_concat(dirs_icons, files_icons), table_concat(dir_cols, file_cols)
 
 	-- show current path and up dir button
 	table.insert(output, 1, "..")
