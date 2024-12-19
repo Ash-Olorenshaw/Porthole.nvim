@@ -58,3 +58,12 @@ require "porthole-nvim".setup {
 Put this either in your `init.lua` or in a Lua block in your `init.vim` if you want to tweak things.
 
 When set to *true*, `use_icons` will use [NERDFont](https://github.com/ryanoasis/nerd-fonts) icons.
+
+## Credits
+
+Influences/other stuff that is similar:
+
+ - [Telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
+ - [NERDTree](https://github.com/preservim/nerdtree)
+ - [Vim-Devicons](https://github.com/ryanoasis/vim-devicons)
+ - [Nvim-Tree.lua](https://github.com/nvim-tree/nvim-tree.lua) - (one day *Porthole* might have all the features this incredible plugin has!)
