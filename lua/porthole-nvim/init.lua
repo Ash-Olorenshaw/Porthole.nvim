@@ -32,6 +32,9 @@ function cursor_interact(dirs, files)
 			local relevant_items = table.move(dir_parts, 1, #dir_parts - 1, 1, {})
 			print(vim.inspect(relevant_items))
 			current_dir = table.concat(relevant_items, system_delimiter)
+			if (system_delimiter == '/') then
+				current_dir = "/" .. current_dir
+			end
 		elseif (system_delimiter == '/') then
 			current_dir = '/'
 		end
@@ -98,6 +101,9 @@ function list_stuff(directories)
 		local dir_parts = string_split(debug.getinfo(1).source:sub(2), "/")
 		local relevant_items = table.move(dir_parts, 1, #dir_parts - 1, 1, {})
 		local plug_dir = table.concat(relevant_items, system_delimiter)
+		if (system_delimiter == "/") then
+			plug_dir = "/" .. plug_dir
+		end
 
 		if (directories) then
 			childItems = popen('dotnet "'..plug_dir..system_delimiter..'Lister/Lister.dll'..'" "'..current_dir..'" -d')
