@@ -25,7 +25,7 @@ Get started by installing this plugin with your plugin manager of choice:
 
 ```Vim
 " Vim-Plugged
-Plug "ash-olorenshaw/porthole.nvim"
+Plug 'ash-olorenshaw/porthole.nvim'
 ```
 
 then run
