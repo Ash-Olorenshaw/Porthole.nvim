@@ -24,26 +24,70 @@ local buffer = nil
 
 declare_colours()
 
-function cursor_interact(dirs, files)
+function up_dir()
+	local dir_parts = string_split(current_dir, system_delimiter)
+	if (#dir_parts > 1) then
+		local relevant_items = table.move(dir_parts, 1, #dir_parts - 1, 1, {})
+		print(vim.inspect(relevant_items))
+		current_dir = table.concat(relevant_items, system_delimiter)
+	elseif (system_delimiter == '/') then
+		current_dir = '/'
+	end
+
+	print(vim.inspect(current_dir))
+	generate_buffer()
+end
+
+function move_object(file_name)
+	local win_width = math.ceil(vim.o.columns * 0.5)
+    local win_height = math.ceil(vim.o.lines * 0.1)
+    local buf = vim.api.nvim_create_buf(false, true)
+
+    vim.api.nvim_buf_set_option(buf, 'buftype', 'nofile')
+    vim.api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
+    
+    local opts = {
+        relative = 'editor',
+        width = win_width,
+        height = win_height,
+        row = vim.o.lines / 2,
+        col = vim.o.columns / 2,
+        style = 'minimal',
+        border = 'single'
+    }
+    
+    win = vim.api.nvim_open_win(buf, true, opts)
+    
+    vim.api.nvim_win_set_option(win, 'wrap', false)
+    vim.api.nvim_win_set_option(win, 'cursorline', true)
+    vim.api.nvim_win_set_option(win, 'cursorcolumn', false)
+	vim.api.nvim_win_set_option(win, 'winblend', 10)
+    vim.api.nvim_buf_set_option(buf, 'modifiable', true)
+
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, {file_name})
+
+    vim.keymap.set('n', config.reload_key, function() issue_move_command(file_name) end, { noremap = true, silent = true })
+end
+
+function cursor_interact(dirs, files, interaction_type)
 	y, x = unpack(vim.api.nvim_win_get_cursor(0))
 	if (y == 2) then
-		local dir_parts = string_split(current_dir, system_delimiter)
-		if (#dir_parts > 1) then
-			local relevant_items = table.move(dir_parts, 1, #dir_parts - 1, 1, {})
-			print(vim.inspect(relevant_items))
-			current_dir = table.concat(relevant_items, system_delimiter)
-		elseif (system_delimiter == '/') then
-			current_dir = '/'
-		end
-
-		print(vim.inspect(current_dir))
-		generate_buffer()
+		up_dir()
 	elseif (1 < y and y <= #dirs + 2) then
-		current_dir = current_dir..system_delimiter..dirs[y - 2]
-		generate_buffer()
-
+		if (interaction_type == "move") then
+			move_object(dirs[y - 2])
+		else
+			-- go inside dir
+			current_dir = current_dir..system_delimiter..dirs[y - 2]
+			generate_buffer()
+		end
 	elseif (y > #dirs + 2) then
-		vim.cmd("execute \"normal \\<C-w>p\" | :edit "..current_dir..system_delimiter..files[y - #dirs - 2])
+		if (type == "move") then
+			move_object(files[y - #dirs - 2])
+		else
+			-- edit file
+			vim.cmd("execute \"normal \\<C-w>p\" | :edit "..current_dir..system_delimiter..files[y - #dirs - 2])
+		end
 	end
 end
 
@@ -186,9 +230,13 @@ function generate_buffer()
 		end
 	end
 
-    vim.keymap.set('n', config.action_key, function() cursor_interact(dirs, files) end, { noremap = true, silent = true, buffer = true })
+    vim.keymap.set('n', config.action_key, function() cursor_interact(dirs, files, "interact") end, { noremap = true, silent = true, buffer = true })
+    vim.keymap.set('n', 'm', function() cursor_interact(dirs, files, "move") end, { noremap = true, silent = true, buffer = true })
 
     vim.api.nvim_buf_set_option(buffer, 'modifiable', false)
+end
+
+function create_small_popup(content)
 end
 
 function M.create_floating_window()
@@ -230,6 +278,23 @@ function M.create_floating_window()
 
     vim.api.nvim_buf_set_keymap(buffer, 'n', config.quit_key, ':bd!<CR>', { noremap = true, silent = true })
     vim.keymap.set('n', config.reload_key, function() generate_buffer() end, { noremap = true, silent = true })
+end
+
+function issue_move_command(current_item) 
+	local future_item = vim.api.nvim_buf_get_lines(buf, 0, -1, false)[1]
+
+	if (vim.fn.executable('pwsh') == 1) then
+		childItems = popen('pwsh -Command Move-Item "'..current_item..'" "'..future_item..'"')
+
+	elseif (vim.fn.executable('powershell.exe') == 1) then
+		childItems = popen('powershell.exe -Command Move-Item "'..current_item..'" "'..future_item..'"')
+
+	elseif(system_delimiter == '\\') then
+			childItems = popen('move "'..current_item..'" "'..future_item..'"')
+
+	elseif(system_delimiter == '/') then
+		childItems = popen('mv "'..current_item..'" "'..future_item..'"')
+	end
 end
 
 function M.setup(user_config)
