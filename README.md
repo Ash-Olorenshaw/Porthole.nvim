@@ -41,6 +41,10 @@ e.g.
 # Ubuntu
 sudo apt update
 sudo apt install dotnet8
+
+# Fedora
+sudo dnf update
+sudo dnf install dotnet
 ```
 
 ## Settings
