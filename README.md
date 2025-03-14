@@ -34,7 +34,7 @@ then run
 ```
 to get started!
 
-If you want to have Porthole.nvim use [**Lister**](https://github.com/Ash-Olorenshaw/Lister) for better speeds - install .NET 8.0 with your method of choice.
+If you want to have Porthole.nvim use [**Lister**](https://github.com/Ash-Olorenshaw/Lister) for better speeds - install .NET 9.0 with your method of choice.
 
 e.g.
 ```nu-script
