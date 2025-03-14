@@ -38,14 +38,17 @@ If you want to have Porthole.nvim use [**Lister**](https://github.com/Ash-Oloren
 
 e.g.
 ```nu-script
-# Ubuntu
-sudo apt update
-sudo apt install dotnet8
+# Windows
+winget install Microsoft.DotNet.DesktopRuntime.9
 
 # Fedora
-sudo dnf update
-sudo dnf install dotnet
+sudo dnf install dotnet-runtime-9.0 -y
+
+# Ubuntu
+sudo apt-get update
+sudo apt-get install dotnet-runtime-9.0 -y
 ```
+For MacOS check out [this](https://learn.microsoft.com/en-us/dotnet/core/install/macos) page. For other Linux distros, follow these instructions [here](https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu).
 
 ## Settings
 
